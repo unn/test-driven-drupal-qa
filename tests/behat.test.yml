@@ -1,0 +1,37 @@
+default:
+  paths:
+    features: 'features'
+  extensions:
+    Behat\MinkExtension\Extension:
+      goutte:
+        guzzle_parameters:
+          redirect.disable: true
+          ssl.certificate_authority: system
+          curl.options:
+            CURLOPT_SSL_VERIFYPEER: false
+            CURLOPT_SSL_VERIFYHOST: false
+            CURLOPT_CERTINFO: false
+            CURLOPT_TIMEOUT: 120
+      base_url: https://petitionsstg.castle.acquia-sites.com
+      selenium2: ~
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~
+      region_map:
+        navigation:          "#navigation"
+        top header:          "#header-top"
+        middle header:       "#header-middle"
+        bottom header:       "#header-bottom"
+        content:             "#content"
+        left:                "#left"
+        center:              "#center"
+        right:               "#right"
+        footer:              "#footer"
+      text:
+        username_field: "edit-name"
+        password_field: "edit-pass"
+        log_out:       "Sign out"
+      basic_auth:
+        username:      'anonuser'
+        password:      'anonuser'
+      drush:
+        alias:         '@petitions.test'
