@@ -43,8 +43,11 @@
   <apply executable="php" failonerror="true">
    <arg value="-l" />
 
-   <fileset dir="${basedir}/src">
+   <fileset dir="${basedir}/sites">
     <include name="**/*.php" />
+    <include name="**/*.inc" />
+    <include name="**/*.module" />
+    <include name="**/*.install" />
     <modified />
    </fileset>
 
@@ -136,7 +139,7 @@
  </target>
 
  <target name="behat" description="BDD tests">
-  <exec executable="${basedir}/vendor/bin/behat">
+  <exec dir="${basedir}/tests" executable="${basedir}/vendor/bin/behat" failonerror="true">
     <arg value="--config" />
     <arg path="${basedir}/tests/behat.test.yml" />
     <arg value="--format junit" />
