@@ -58,3 +58,6 @@ docroot/xhprof_*
 # Drupal specific
 sites/default/files
 sites/*/settings.local.inc
+
+# Composer specific
+vendor/*
