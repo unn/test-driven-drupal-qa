@@ -49,7 +49,7 @@
 
  <target name="composer" depends="composer-check,composer-download" description="Run composer update">
    <exec executable="php" failonerror="true">
-     <arg line="${basedir}/build/composer.phar install -o"/>
+     <arg line="${basedir}/build/composer.phar update -o"/>
    </exec>
  </target>
 
@@ -72,11 +72,11 @@
   </apply>
  </target>
 
- <target name="phploc" description="Measure project size using PHPLOC">
-  <exec executable="phploc">
+ <target name="phploc" depends="composer" description="Measure project size using PHPLOC">
+  <exec executable="${basedir}/vendor/bin/phploc">
    <arg value="--log-csv" />
    <arg value="${basedir}/build/logs/phploc.csv" />
-   <arg path="${basedir}/src" />
+   <arg path="${basedir}/sites" />
   </exec>
  </target>
 

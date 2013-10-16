@@ -1,5 +1,6 @@
 {
   "require": {
-    "drupal/drupal-extension": "*"
+    "drupal/drupal-extension": "*",
+    "phploc/phploc": "2.0.*@dev"
   }
 }
