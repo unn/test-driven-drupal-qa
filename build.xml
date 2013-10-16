@@ -2,7 +2,7 @@
 
 <project name="example" default="build">
  <target name="build"
-   depends="prepare,lint,behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpdox,phpunit,phpcb"/>
+   depends="prepare,lint,composer,behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpdox,phpunit,phpcb"/>
 
  <target name="build-parallel"
    depends="prepare,lint,tools-parallel,phpunit,phpcb"/>
@@ -39,6 +39,20 @@
   <mkdir dir="${basedir}/build/behat"/>
  </target>
 
+ <target name="composer-check" depends="prepare">
+   <available file="${basedir}/build/composer.phar" property="composer.present"/>
+ </target>
+
+ <target name="composer-download" unless="composer.present">
+   <get src="https://getcomposer.org/composer.phar" dest="${basedir}/build/composer.phar"/>
+ </target>
+
+ <target name="composer" depends="composer-check,composer-download" description="Run composer update">
+   <exec executable="php" failonerror="true">
+     <arg line="${basedir}/build/composer.phar install -o"/>
+   </exec>
+ </target>
+
  <target name="lint" description="Perform syntax check of sourcecode files">
   <apply executable="php" failonerror="true">
    <arg value="-l" />
@@ -53,7 +67,6 @@
 
    <fileset dir="${basedir}/tests">
     <include name="**/*.php" />
-    <exclude name="vendor/**" />
     <modified />
    </fileset>
   </apply>
@@ -139,13 +152,9 @@
   </exec>
  </target>
 
- <target name="behat" description="BDD tests">
-   <exec dir="${basedir}/tests" executable="${basedir}/tests/vendor/bin/behat" failonerror="true">
-    <arg value="--config" />
-    <arg path="${basedir}/tests/behat.test.yml" />
-    <arg value="--format junit" />
-    <arg value="--out" />
-    <arg path="${basedir}/build/behat" />
+ <target name="behat" depends="composer" description="BDD tests">
+   <exec dir="${basedir}/tests" executable="${basedir}/vendor/bin/behat" failonerror="true">
+    <arg line="--format junit --config ${basedir}/tests/behat.test.yml --out ${basedir}/build/behat" />
   </exec>
 
  </target>
