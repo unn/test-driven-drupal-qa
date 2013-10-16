@@ -1,6 +1,10 @@
 {
   "require": {
     "drupal/drupal-extension": "*",
-    "phploc/phploc": "2.0.*@dev"
+    "phploc/phploc": "2.0.*@dev",
+    "sebastian/phpcpd": "2.0.*@dev",
+    "theseer/phpdox": "0.5.*@dev",
+    "phpunit/phpunit": "3.7.27",
+    "covex-nn/phpcb": "dev-composer-stable"
   }
 }
