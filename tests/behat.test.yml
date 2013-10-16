@@ -16,22 +16,5 @@ default:
       selenium2: ~
     Drupal\DrupalExtension\Extension:
       blackbox: ~
-      region_map:
-        navigation:          "#navigation"
-        top header:          "#header-top"
-        middle header:       "#header-middle"
-        bottom header:       "#header-bottom"
-        content:             "#content"
-        left:                "#left"
-        center:              "#center"
-        right:               "#right"
-        footer:              "#footer"
-      text:
-        username_field: "edit-name"
-        password_field: "edit-pass"
-        log_out:       "Sign out"
-      basic_auth:
-        username:      'anonuser'
-        password:      'anonuser'
       drush:
         alias:         '@petitions.test'
