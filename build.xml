@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="example" default="build">
+
   <target name="build"
-    depends="prepare,lint,composer,behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit,phpcb"/>
+    depends="prepare,jmeter,lint,composer,behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit,phpcb"/>
 
   <target name="build-parallel"
     depends="prepare,lint,tools-parallel,phpunit,phpcb"/>
@@ -20,6 +21,18 @@
     </parallel>
   </target>
 
+  <target name="jmeter">
+    <taskdef name="jmeter" classname="org.programmerplanet.ant.taskdefs.jmeter.JMeterTask"/>
+
+    <jmeter
+      jmeterhome="/opt/apache-jmeter"
+      resultlog="${basedir}/build/jmeter/results.jtl">
+      <testplans dir="${basedir}/tests/" includes="*.jmx"/>
+      <property name="request.threads" value="1"/>
+      <property name="request.loop" value="1"/>
+    </jmeter>
+  </target>
+
   <target name="clean" description="Cleanup build artifacts">
     <delete dir="${basedir}/build/api"/>
     <delete dir="${basedir}/build/code-browser"/>
@@ -27,6 +40,7 @@
     <delete dir="${basedir}/build/logs"/>
     <delete dir="${basedir}/build/pdepend"/>
     <delete dir="${basedir}/build/behat"/>
+    <delete dir="${basedir}/build/jmeter"/>
   </target>
 
   <target name="prepare" depends="clean" description="Prepare for build">
@@ -37,6 +51,7 @@
     <mkdir dir="${basedir}/build/pdepend"/>
     <mkdir dir="${basedir}/build/phpdox"/>
     <mkdir dir="${basedir}/build/behat"/>
+    <mkdir dir="${basedir}/build/jmeter"/>
   </target>
 
   <target name="composer-check" depends="prepare">
