@@ -72,7 +72,7 @@
     <apply executable="php" failonerror="true">
       <arg value="-l" />
 
-      <fileset dir="${basedir}/docroot">
+      <fileset dir="${basedir}/sites">
         <include name="**/*.php" />
         <include name="**/*.inc" />
         <include name="**/*.module" />
