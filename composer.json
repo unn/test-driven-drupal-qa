@@ -1,9 +1,23 @@
 {
+  "name": "acquia/project",
+  "description": "The project website.",
+  "license": "proprietary",
+  "authors": [
+    {
+        "name": "David Stoline",
+        "email": "drupal@davidstoline.com"
+    }
+  ],
   "require": {
     "drupal/drupal-extension": "*",
+    "behat/mink-selenium-driver":  "1.*",
     "phploc/phploc": "2.0.*@dev",
     "sebastian/phpcpd": "2.0.*@dev",
     "phpunit/phpunit": "3.7.27",
-    "covex-nn/phpcb": "dev-composer-stable"
+    "covex-nn/phpcb": "1.0.*@dev",
+    "squizlabs/php_codesniffer": "1.5.*",
+    "pdepend/pdepend": "1.1.*",
+    "phpmd/phpmd": "1.*",
+    "drush/drush": "6.*"
   }
 }

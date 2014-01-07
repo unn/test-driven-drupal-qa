@@ -1,0 +1,34 @@
+default:
+  paths:
+    features: 'features'
+  extensions:
+    Behat\MinkExtension\Extension:
+      default_session: goutte
+      javascript_session: selenium
+      goutte:
+        guzzle_parameters:
+          redirect.disable: true
+          ssl.certificate_authority: system
+          curl.options:
+            CURLOPT_SSL_VERIFYPEER: false
+            CURLOPT_SSL_VERIFYHOST: false
+            CURLOPT_CERTINFO: false
+            CURLOPT_TIMEOUT: 120
+      base_url: http://projecttest.prod.acquia-sites.com/
+      selenium:
+        host: ondemand.saucelabs.com
+        port: 80
+        browser: >
+          {
+            "username":         "",
+            "access-key":       "",
+            "browser":          "iehta",
+            "browser-version":  "9",
+            "os":               "Windows 7",
+            "name":             ""
+          }
+      selenium2: ~
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~
+      drush:
+        alias: '@projecttest.test'

@@ -49,15 +49,24 @@ local.properties
 # PDT-specific
 .buildpathk
 
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
 # PHPStorm
 .idea/
 
-# XHProf
-docroot/xhprof_*
-
-# Drupal specific
+#files directory
 sites/default/files
-sites/*/settings.local.inc
 
-# Composer specific
+#XHProf
+xhprof_*
+
+#Composer vendor
 vendor/*

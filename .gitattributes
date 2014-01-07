@@ -49,11 +49,10 @@
 *.jpg     drupalbinary
 *.png     drupalbinary
 *.phar    drupalbinary
-*.jpg     drupalbinary
+*.JPG     drupalbinary
 *.ttf     drupalbinary
 *.eot     drupalbinary
 *.db      drupalbinary
 *.swf     drupalbinary
 *.tar     drupalbinary
 *.pdf     drupalbinary
-*.exe     drupalbinary

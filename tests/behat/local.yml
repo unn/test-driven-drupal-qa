@@ -1,0 +1,14 @@
+default:
+  paths:
+    features: 'features'
+  extensions:
+    Behat\MinkExtension\Extension:
+      goutte:
+        guzzle_parameters:
+          redirect.disable: true
+      base_url: http://project.localhost
+      selenium2: ~
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~
+      drush:
+        alias: '@project.localhost'
