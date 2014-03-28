@@ -14,18 +14,18 @@ default:
             CURLOPT_SSL_VERIFYHOST: false
             CURLOPT_CERTINFO: false
             CURLOPT_TIMEOUT: 120
-      base_url: "http://[project].prod.acquia-sites.com/"
+      base_url: http://project.localhost
       show_cmd: "open %s"
       selenium2:
         # SauceLabs credentials required here.
-        wd_host: "[saucelabs-username]:[saucelabs-access-key]@ondemand.saucelabs.com/wd/hub"
+        wd_host: http://127.0.0.1:4444/wd/hub
         browser: "firefox"
         capabilities: { "platform": "Windows 7", "browser": "firefox" }
     Drupal\DrupalExtension\Extension:
       blackbox: ~
       drush:
-        alias: '@[project].test'
+        alias: '@project.localhost'
             drupal:
       # This must be an absolute path.
-      drupal_root: "/var/www/html/[project].dev/docroot"
+      drupal_root: "/local/path/to/drupal/root"
       api_driver: "drupal"
