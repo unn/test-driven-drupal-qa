@@ -1,21 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="Drupal" default="build-full">
-
+  <property environment="env"/>
   <property name="sites-dir" value="${basedir}/sites/all/modules"/>
   <property name="bin-dir" value="${basedir}/vendor/bin"/>
   <property name="log-dir" value="${basedir}/build/logs"/>
-  <property name="strict" value="false"/>
   <property file="${basedir}/build.properties"/>
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <classpath>
+      <pathelement location="${basedir}/scripts/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
 
-  <macrodef name = "git">
-    <attribute name = "command" />
-    <attribute name = "dir" default = "" />
-    <element name = "args" optional = "true" />
+  <!--
+  These next two properties allow us to set environments and a variety of
+  behat settings. These can be passed from ant or jenkins. For example:
+  ant -DAcquiaEnv=prod -DBehatExtra="-p ie6 -\-tags=~@api,@smoke" -DRemoteBehatExtra="-\-tags="@api"
+  There are escape characters, \, above.
+  -->
+  <property name="AcquiaEnv" value="integration"/>
+  <property name="AcquiaSub" value="client"/>
+  <property name="BehatExtra" value=""/>
+  <property name="RemoteBehatExtra" value=""/>
+
+  <!--
+  If true will fail a build immediately after a target fails. If false wll
+  allow subsequent targets to continue to build should one fail.
+  -->
+  <property name="strict" value="false"/>
+
+  <macrodef name="git">
+    <attribute name="command"/>
+    <attribute name="dir" default=""/>
+    <element name="args" optional="true"/>
     <sequential>
-      <echo message = "git @{command}" />
-      <exec executable = "git" dir = "@{dir}">
-        <arg value = "@{command}" />
+      <exec executable="git" dir="@{dir}" outputproperty="git.@{command}">
+        <arg value="@{command}"/>
+        <args/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <!-- Allows Drush commands to be executed on a specified alias. -->
+  <macrodef name="drush">
+    <attribute name="command"/>
+    <attribute name="alias"/>
+    <attribute name="failonerror" default="${strict}"/>
+    <element name="args" optional="true"/>
+    <sequential>
+      <echo message="drush @{alias} @{command}"/>
+      <exec executable="${bin-dir}/drush" failonerror="@{failonerror}">
+        <arg value="@{alias}"/>
+        <arg value="@{command}"/>
         <args/>
       </exec>
     </sequential>
@@ -23,52 +59,55 @@
 
   <!-- PHP files -->
   <patternset id="php">
-    <include name="**/*.php" />
-    <include name="**/*.module" />
-    <include name="**/*.install" />
-    <include name="**/*.inc" />
-    <include name="**/*.profile" />
-    <include name="**/*.test" />
+    <include name="**/*.php"/>
+    <include name="**/*.module"/>
+    <include name="**/*.install"/>
+    <include name="**/*.inc"/>
+    <include name="**/*.profile"/>
+    <include name="**/*.test"/>
   </patternset>
 
   <!-- Javascript files -->
   <patternset id="js">
-    <include name="**/*.js" />
+    <include name="**/*.js"/>
     <!-- Minimized JavaScript files should not be analyzed.
          In their optimized state they can not be expected
          to conform to coding standards. -->
-    <exclude name="**/*.min.js" />
+    <exclude name="**/*.min.js"/>
   </patternset>
 
   <!-- CSS files -->
   <patternset id="css">
-    <include name="**/*.css" />
+    <include name="**/*.css"/>
   </patternset>
 
     <!-- SCSS/SASS files -->
   <patternset id="sass">
-    <include name="**/*.scss" />
-    <include name="**/*.sass" />
+    <include name="**/*.scss"/>
+    <include name="**/*.sass"/>
   </patternset>
 
   <!-- Directories for community contributed code. We exclude these from
        code analysis as we cannot be held responsible for any problems
        here. -->
   <patternset id="contrib">
-    <exclude name="**/contrib/**/*.*" />
-    <exclude name="**/libraries/**/*.*" />
+    <exclude name="**/contrib/**/*.*"/>
+    <exclude name="**/libraries/**/*.*"/>
   </patternset>
 
-  <!-- We exclude generated files from We exclude these from code analysis
+  <!-- We exclude generated files from code analysis
        as we cannot be held responsible for any problems here. -->
   <patternset id="generated">
-    <exclude name="**/*.features.*" />
-    <exclude name="**/*.field_group.inc" />
-    <exclude name="**/*.layouts.inc" />
-    <exclude name="**/*.pages_default.inc" />
-    <exclude name="**/*.panels_default.inc" />
-    <exclude name="**/*.strongarm.inc" />
-    <exclude name="**/*.views_default.inc" />
+    <exclude name="**/*.features.*"/>
+    <exclude name="**/*.context.inc"/>
+    <exclude name="**/*.field_group.inc"/>
+    <exclude name="**/*.layouts.inc"/>
+    <exclude name="**/*.pages_default.inc"/>
+    <exclude name="**/*.panels_default.inc"/>
+    <exclude name="**/*.panelizer.inc"/>
+    <exclude name="**/*.services.inc"/>
+    <exclude name="**/*.strongarm.inc"/>
+    <exclude name="**/*.views_default.inc"/>
   </patternset>
 
   <!-- All PHP files -->
@@ -85,45 +124,69 @@
 
   <!-- All javascript files -->
   <fileset id="src.js" dir="${sites-dir}">
-    <patternset refid="js" />
+    <patternset refid="js"/>
   </fileset>
 
   <!-- Custom javascript files -->
   <fileset id="src.js.custom" dir="${sites-dir}">
-    <patternset refid="js" />
-    <patternset refid="contrib" />
+    <patternset refid="js"/>
+    <patternset refid="contrib"/>
   </fileset>
 
   <!-- All CSS files -->
   <fileset id="src.css" dir="${sites-dir}">
-    <patternset refid="css" />
+    <patternset refid="css"/>
   </fileset>
 
   <!-- Custom CSS files -->
   <fileset id="src.css.custom" dir="${sites-dir}">
-    <patternset refid="css" />
-    <patternset refid="contrib" />
+    <patternset refid="css"/>
+    <patternset refid="contrib"/>
   </fileset>
 
   <!-- All SCSS/SASS files -->
   <fileset id="src.sass" dir="${sites-dir}">
-    <patternset refid="sass" />
+    <patternset refid="sass"/>
   </fileset>
 
   <!-- Custom SCSS/SASS files -->
   <fileset id="src.sass.custom" dir="${sites-dir}">
-    <patternset refid="sass" />
-    <patternset refid="contrib" />
+    <patternset refid="sass"/>
+    <patternset refid="contrib"/>
   </fileset>
 
+  <target name="cloudbees-check">
+    <condition property="iscloudbees">
+      <contains string="ci.cloudbees.com" substring="${env.JENKINS_URL}" />
+    </condition>
+  </target>
+
+  <target name="cloudbees-setup" depends="cloudbees-check" if="iscloudbees">
+    <mkdir dir="${user.home}/.drush"/>
+    <copy file="${basedir}/scripts/${AcquiaSub}.aliases.drushrc.php"
+          tofile="${user.home}/.drush/${AcquiaSub}.aliases.drushrc.php"/>
+    <copy file="${basedir}/scripts/acapi.drush.inc"
+          tofile="${user.home}/.drush/acapi.drush.inc"/>
+    <copy file="${basedir}/scripts/cloudapi.acquia.com.pem"
+          tofile="${user.home}/.drush/cloudapi.acquia.com.pem"/>
+    <copy file="${basedir}/scripts/cloudbees.php.ini"
+          tofile="${user.home}/php.ini"/>
+    <var name="env.PHPRC" value="${user.home}"/>
+    <var name="env.PATH" value="${env.PATH}:${bin-dir}"/>
+    <echoproperties prefix="env."/>
+  </target>
+
   <target name="build-full"
-    depends="prepare,lint,composer,behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpcb"/>
+    depends="prepare,lint,composer,remote-behat,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpcb"/>
 
   <target name="build-parallel"
     depends="prepare,lint,tools-parallel,phpunit,phpcb"/>
 
   <target name="build-analysis"
     depends="prepare,tools-parallel"/>
+
+  <target name="build-smoke"
+    depends="lint,phpcs-ci,acapi,remote-behat"/>
 
   <target name="tools-parallel" description="Run tools in parallel">
     <parallel threadCount="2">
@@ -146,7 +209,7 @@
     <delete dir="${log-dir}"/>
   </target>
 
-  <target name="prepare" depends="clean" description="Prepare for build">
+  <target name="prepare" depends="clean,cloudbees-setup" description="Prepare for build">
     <mkdir dir="${basedir}/build/api"/>
     <mkdir dir="${basedir}/build/code-browser"/>
     <mkdir dir="${basedir}/build/coverage"/>
@@ -154,6 +217,7 @@
     <mkdir dir="${basedir}/build/phpdox"/>
     <mkdir dir="${basedir}/build/behat"/>
     <mkdir dir="${log-dir}"/>
+    <var name="env.PATH" value="${env.PATH}:${bin-dir}"/>
   </target>
 
   <target name="drupalcs-check" depends="prepare">
@@ -163,8 +227,8 @@
   <target name="drupalcs-download" depends="drupalcs-check" unless="drupalcs.present">
     <git command = "clone">
       <args>
-        <arg value = "http://git.drupal.org/project/coder.git" />
-        <arg value = "build/coder" />
+        <arg value = "http://git.drupal.org/project/coder.git"/>
+        <arg value = "build/coder"/>
       </args>
     </git>
   </target>
@@ -179,19 +243,49 @@
 
   <target name="composer" depends="composer-check,composer-download" description="Run composer update">
     <exec executable="php" failonerror="${strict}">
-      <arg line="${basedir}/build/composer.phar update -o -vvv --profile"/>
+      <arg line="${basedir}/build/composer.phar install -o -vvv --profile"/>
     </exec>
+  </target>
+
+  <target name="acapi" depends="composer,cloudbees-setup" description="Deploy integration branch on Acquia integration environment">
+    <fail unless="AcquiaCloud.user">The Acquia Cloud API username is not set. Set it in build.properties or pass directly to ant.</fail>
+    <fail unless="AcquiaCloud.pass">The Acquia Cloud API password is not set. Set it in build.properties or pass directly to ant.</fail>
+
+    <exec executable="${bin-dir}/drush" failonerror="${strict}">
+      <arg line="@${AcquiaSub}.${AcquiaEnv} ac-code-path-deploy integration --username=${AcquiaCloud.user} --password=${AcquiaCloud.pass}"/>
+    </exec>
+  </target>
+
+  <target name="make" depends="composer,cloudbees-setup" description="Rebuild contributed modules from make file">
+    <drush alias="@none" command="make" failonerror="true">
+      <args>
+        <arg value="${basedir}/scripts/contrib.make"/>
+        <arg value="-y"/>
+        <arg value="--no-core"/>
+        <arg value="--no-gitinfofile"/>
+        <arg value="--contrib-destination=${basedir}/sites/all"/>
+      </args>
+    </drush>
+  </target>
+
+  <target name="make-diff" description="Diff contrib build">
+    <git command="diff"/>
+    <fail>
+      <condition>
+        <length string="${git.diff}" when="gt" length="1"/>
+      </condition>
+    </fail>
   </target>
 
   <target name="lint" description="Perform syntax check of sourcecode files">
     <apply executable="php" failonerror="${strict}">
-      <arg value="-l" />
+      <arg value="-l"/>
 
-      <fileset refid="src.php.custom" />
+      <fileset refid="src.php.custom"/>
 
       <fileset dir="${basedir}/tests">
-        <include name="**/*.php" />
-        <exclude name="vendor/**" />
+        <include name="**/*.php"/>
+        <exclude name="vendor/**"/>
         <modified />
       </fileset>
     </apply>
@@ -201,27 +295,84 @@
     <exec executable="${bin-dir}/phpunit" failonerror="${strict}"/>
   </target>
 
-  <target name="behat" depends="composer" description="Behat tests">
-    <exec dir="${basedir}/tests" executable="${bin-dir}/behat" failonerror="${strict}">
-      <arg line="--format junit --config ${basedir}/tests/behat/test.yml --out ${basedir}/build/behat" />
+  <target name="clear-caches" depends="cloudbees-setup" description="Clear all caches">
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="cc" failonerror="true">
+      <args>
+        <arg value="all"/>
+        <arg value="-y"/>
+      </args>
+    </drush>
+  </target>
+
+  <target name="features-revert" depends="cloudbees-setup" description="Revert all features">
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="fra" failonerror="true">
+      <args>
+        <arg value="-y"/>
+      </args>
+    </drush>
+  </target>
+
+  <target name="update-db" depends="cloudbees-setup" description="Perform outstanding database updates">
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="updb" failonerror="true">
+      <args>
+        <arg value="-y"/>
+      </args>
+    </drush>
+  </target>
+
+  <target name="local-behat" depends="composer,acapi,clear-caches,update-db,features-revert" description="Locally executed Behat tests">
+    <exec executable="${bin-dir}/behat" failonerror="${strict}">
+      <arg value="--format=junit"/>
+      <arg value="--out=${basedir}/build/behat"/>
+      <arg value="--config=${basedir}/tests/behat/${AcquiaEnv}.yml"/>
+      <arg value="${BehatExtra}"/>
+    </exec>
+  </target>
+
+  <target name="remote-behat" depends="composer,acapi,update-db,clear-caches,features-revert" description="Remotely executed Behat tests">
+
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="ssh" failonerror="true">
+      <args>
+        <arg value="--cd=build"/>
+        <arg value="rm -rf ./behat/*"/>
+      </args>
+    </drush>
+
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="ssh" failonerror="true">
+      <args>
+        <arg value="--cd=build"/>
+        <arg value="[ -a composer.phar ] || wget http://getcomposer.org/composer.phar &amp;&amp; COMPOSER_VENDOR_DIR=$HOME/build/vendor /usr/local/php5.3/bin/php composer.phar --working-dir=/var/www/html/${AcquiaSub}${AcquiaEnv} install"/>
+      </args>
+    </drush>
+
+    <drush alias="@${AcquiaSub}.${AcquiaEnv}" command="ssh" failonerror="true">
+      <args>
+        <arg value="--cd=build"/>
+        <arg value="/usr/local/php5.3/bin/php ./vendor/bin/behat -c /var/www/html/${AcquiaSub}{AcquiaEnv}/tests/behat/${AcquiaEnv}.yml --format=junit --out=./behat ${RemoteBehatExtra} || exit 0"/>
+      </args>
+    </drush>
+
+    <exec executable="${bin-dir}/drush" failonerror="${strict}">
+      <arg line="-y rsync @${AcquiaSub}.${AcquiaEnv}:/home/${AcquiaSub}/build/behat/* build/behat/"/>
     </exec>
   </target>
 
   <target name="phploc" depends="composer" description="Measure project size using PHPLOC">
     <exec executable="${bin-dir}/phploc">
-      <arg value="--log-csv" />
-      <arg value="${log-dir}/phploc.csv" />
-      <arg path="${basedir}/docroot" />
+      <arg value="--log-csv"/>
+      <arg value="${log-dir}/phploc.csv"/>
+      <arg path="${basedir}/docroot"/>
     </exec>
   </target>
 
   <target name="pdepend" depends="composer"
     description="Calculate software metrics using PHP_Depend">
+    <pathconvert refid="src.php.custom" property="pdepend-src-custom" pathsep=","/>
     <exec executable="${bin-dir}/pdepend">
-      <arg value="--jdepend-xml=${log-dir}/jdepend.xml" />
-      <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg" />
-      <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg" />
-      <arg path="${basedir}/docroot" />
+      <arg value="--jdepend-xml=${log-dir}/jdepend.xml"/>
+      <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg"/>
+      <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg"/>
+      <arg path="${pdepend-src-custom}"/>
     </exec>
   </target>
 
@@ -231,7 +382,7 @@
     <exec executable="${bin-dir}/phpmd">
       <arg value="${phpmd-src-custom}"/>
       <arg value="text"/>
-      <arg value="codesize,design,naming" />
+      <arg value="codesize,design,naming"/>
     </exec>
   </target>
 
@@ -240,18 +391,18 @@
     <pathconvert refid="src.php.custom" property="phpmd-ci-src-custom" pathsep=","/>
     <exec executable="${bin-dir}/phpmd">
       <arg value="${phpmd-ci-src-custom}"/>
-      <arg value="xml" />
-      <arg value="codesize,naming,design" />
-      <arg value="--reportfile" />
-      <arg value="${log-dir}/pmd.xml" />
+      <arg value="xml"/>
+      <arg value="codesize,naming,design"/>
+      <arg value="--reportfile"/>
+      <arg value="${log-dir}/pmd.xml"/>
     </exec>
   </target>
 
   <target name="phpcs" depends="drupalcs-download,composer"
     description="Find coding standard violations using PHP_CodeSniffer and print human readable output. Intended for usage on the command line before committing.">
     <pathconvert refid="src.php.custom" property="phpcs-src-custom" pathsep=" "/>
-    <exec dir="${basedir}" executable="${bin-dir}/phpcs">
-      <arg value="-p --standard=${basedir}/build/coder/coder_sniffer/Drupal/ruleset.xml"/>
+    <exec dir="${basedir}" executable="${bin-dir}/phpcs" output="/dev/null">
+      <arg value="--standard=${basedir}/build/coder/coder_sniffer/Drupal/ruleset.xml"/>
       <!-- For some reason this doesn't work if it's set to value -->
       <arg line="${phpcs-src-custom}"/>
     </exec>
@@ -261,9 +412,9 @@
     description="Find coding standard violations using PHP_CodeSniffer creating a log file for the continuous integration server">
     <pathconvert refid="src.php.custom" property="phpcs-ci-src-custom" pathsep=" "/>
     <exec dir="${basedir}" executable="${bin-dir}/phpcs" output="/dev/null">
-      <arg value="--report=checkstyle" />
-      <arg value="--report-file=${log-dir}/checkstyle.xml" />
-      <arg value="-p --standard=${basedir}/build/coder/coder_sniffer/Drupal/ruleset.xml"/>
+      <arg value="--report=checkstyle"/>
+      <arg value="--report-file=${log-dir}/checkstyle.xml"/>
+      <arg value="--standard=${basedir}/build/coder/coder_sniffer/Drupal/ruleset.xml"/>
       <arg line="${phpcs-ci-src-custom}"/>
     </exec>
   </target>
@@ -272,9 +423,8 @@
     description="Find duplicate code using PHPCPD">
     <pathconvert refid="src.php.custom" property="phpcpd-src-custom" pathsep=" "/>
     <exec executable="${bin-dir}/phpcpd">
-      <arg value="--log-pmd" />
-      <arg value="${log-dir}/pmd-cpd.xml" />
-      <arg path="${basedir}/docroot" />
+      <arg value="--log-pmd"/>
+      <arg value="${log-dir}/pmd-cpd.xml"/>
       <arg line="${phpcpd-src-custom}"/>
     </exec>
   </target>
@@ -286,12 +436,12 @@
   <target name="phpcb" depends="composer"
     description="Aggregate tool output with PHP_CodeBrowser">
     <exec executable="${bin-dir}/phpcb">
-      <arg value="--log" />
-      <arg path="${log-dir}" />
-      <arg value="--source" />
-      <arg path="${basedir}/docroot" />
-      <arg value="--output" />
-      <arg path="${basedir}/build/code-browser" />
+      <arg value="--log"/>
+      <arg path="${log-dir}"/>
+      <arg value="--source"/>
+      <arg path="${basedir}/docroot"/>
+      <arg value="--output"/>
+      <arg path="${basedir}/build/code-browser"/>
     </exec>
   </target>
 

@@ -4,6 +4,7 @@ This starterkit is intended to expedite the process setting up automated testing
 
 * Run the following commands:
 ````
+brew install ant
 composer self-update
 composer install
 cp tests/behat/default.local.yml tests/behat/local.yml
